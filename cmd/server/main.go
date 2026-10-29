@@ -13,6 +13,9 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"go.mau.fi/whatsmeow"
+	waStore "go.mau.fi/whatsmeow/store"
 )
 
 func main() {
@@ -41,6 +44,21 @@ func main() {
 	}
 	log := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level}))
 	slog.SetDefault(log)
+
+	// O WhatsApp recusa (erro 405 "Client outdated") versoes antigas do cliente
+	// web e a embutida na biblioteca envelhece. Busca a atual no startup; se
+	// falhar, segue com a embutida.
+	{
+		vctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		if ver, err := whatsmeow.GetLatestVersion(vctx, nil); err != nil {
+			log.Warn("nao consegui buscar a versao atual do WhatsApp Web; usando a embutida",
+				"err", err, "versao", waStore.GetWAVersion().String())
+		} else {
+			waStore.SetWAVersion(*ver)
+			log.Info("versao do WhatsApp Web atualizada", "versao", ver.String())
+		}
+		cancel()
+	}
 
 	// Resolve the SPA build directory even when an old systemd unit still passes
 	// '-static client/dist'. If the supplied path is missing or has no index.html,

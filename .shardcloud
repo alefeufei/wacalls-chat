@@ -1,0 +1,7 @@
+DISPLAY_NAME=WaCalls
+DESCRIPTION=WaCalls - atendimento WhatsApp multi-conexao (Go + React)
+LANGUAGE=go
+CUSTOM_COMMAND=go run ./cmd/server -addr 0.0.0.0:80
+MEMORY=4096
+VERSION=latest
+SUBDOMAIN=wacalls
